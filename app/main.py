@@ -31,18 +31,17 @@ async def heartbeat_ctx(app):
 
 
 def make_app():
-    loop = asyncio.get_event_loop()
-
     handler = Handler()
     handler.load_data(path=settings.PROJECT_ROOT / 'data')
 
-    app = web.Application(middlewares=[blacklist_middleware])
+    app = web.Application(middlewares=[
+        XForwardedRelaxed().middleware,
+        blacklist_middleware,
+    ])
 
     setup_routes(app, handler)
 
     app.cleanup_ctx.append(heartbeat_ctx)
-
-    loop.run_until_complete(setup(app, XForwardedRelaxed()))
 
     return app
 
