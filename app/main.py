@@ -1,17 +1,14 @@
 #!/usr/bin/env python
 import asyncio
-import os
-import signal
 import logging
 
 import uvloop
 from aiohttp import web
-from yarl import URL
 
-from .heartbeat import heartbeat
-from .handlers import Handler
-from .routes import setup_routes
 from . import settings
+from .handlers import Handler
+from .heartbeat import heartbeat
+from .routes import setup_routes
 
 
 async def heartbeat_ctx(app):

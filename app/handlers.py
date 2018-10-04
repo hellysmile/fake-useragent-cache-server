@@ -1,6 +1,4 @@
-import io
 import json
-import os
 
 from aiohttp import web
 
