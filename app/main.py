@@ -2,73 +2,56 @@
 import asyncio
 import os
 import signal
+import logging
 
 import uvloop
 from aiohttp import web
 from yarl import URL
 
-from .background import heartbeat
+from .heartbeat import heartbeat
 from .handlers import Handler
 from .routes import setup_routes
+from . import settings
 
 
-def _sigint(signum, frame):
-    os.kill(os.getpid(), signal.SIGINT)
+async def heartbeat_ctx(app):
+    loop = asyncio.get_event_loop()
+
+    task = loop.create_task(heartbeat(
+        url=settings.HEARTBEAT_URL,
+        timeout=settings.HEARTBEAT_TIMEOUT,
+        delay=settings.HEARTBEAT_DELAY,
+    ))
+
+    yield
+
+    task.cancel()
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass
 
 
-def main():
-    asyncio.set_event_loop(None)
+def make_app():
+    handler = Handler()
+    handler.load_data(path=settings.PROJECT_ROOT / 'data')
 
-    loop = uvloop.new_event_loop()
-
-    handler = Handler(loop=loop)
-    _root = os.path.abspath(os.path.dirname(__file__))
-    handler.lookup_files(os.path.join(_root, 'data'))
-
-    app = web.Application(loop=loop)
+    app = web.Application()
 
     setup_routes(app, handler)
 
-    handler = app.make_handler(access_log=None)
+    app.cleanup_ctx.append(heartbeat_ctx)
 
-    server = loop.create_server(
-        handler,
-        os.environ.get('HOST', '0.0.0.0'),
-        int(os.environ.get('PORT', 5000)),
-    )
+    return app
 
-    url = URL('https://fake-useragent.herokuapp.com/')
 
-    _heartbeat = loop.create_task(heartbeat(url, 10, 60, loop=loop))
+def main():
+    logging.basicConfig(level=logging.DEBUG)
 
-    srv = loop.run_until_complete(server)
+    asyncio.set_event_loop(None)
+    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+    asyncio.set_event_loop(asyncio.new_event_loop())
 
-    signal.signal(signal.SIGTERM, _sigint)
+    app = make_app()
 
-    try:
-        try:
-            loop.run_forever()
-        except KeyboardInterrupt:
-            pass
-
-        _heartbeat.cancel()
-
-        try:
-            loop.run_until_complete(_heartbeat)
-        except asyncio.CancelledError:
-            pass
-
-        srv.close()
-
-        loop.run_until_complete(srv.wait_closed())
-
-        loop.run_until_complete(app.shutdown())
-
-        loop.run_until_complete(handler.finish_connections(5.0))
-
-        loop.run_until_complete(app.cleanup())
-
-    finally:
-        loop.call_soon(loop.stop)
-        loop.run_forever()
-        loop.close()
+    web.run_app(app, host=settings.HOST, port=settings.PORT)

@@ -6,20 +6,14 @@ from aiohttp import web
 
 
 class Handler:
-    def __init__(self, *, loop):
-        self.loop = loop
 
+    def __init__(self):
         self.files = {}
 
-    def lookup_files(self, path):
-        for obj in os.listdir(path):
-            _path = os.path.join(path, obj)
-
-            if os.path.isfile(_path):
-                name, _ = os.path.splitext(obj)
-
-                with io.open(_path, mode='rt', encoding='utf-8') as fp:
-                    self.files[name] = json.dumps(json.load(fp)).encode('utf-8')  # noqa
+    def load_data(self, *, path):
+        for f in path.glob('*.json'):
+            with f.open(mode='rt', encoding='utf-8') as fp:
+                self.files[f.name] = json.dumps(json.load(fp)).encode('utf-8')
 
     def browsers(self, request):
         version = request.match_info['version']
