@@ -18,7 +18,9 @@ class Handler:
 
         for f in path.glob('*.json'):
             with f.open(mode='rt', encoding='utf-8') as fp:
-                self.files[f.namebase] = json.dumps(json.load(fp)).encode('utf-8')
+                self.files[f.namebase] = json.dumps(
+                    json.load(fp),
+                ).encode('utf-8')
 
                 msg = 'Found %(name)s'
                 context = {'name': f.name}
