@@ -13,7 +13,7 @@ class Handler:
 
     def load_data(self, *, path):
         msg = 'Logging for data in %(path)s'
-        context ={'path': path}
+        context = {'path': path}
         logger.debug(msg, context)
 
         for f in path.glob('*.json'):
