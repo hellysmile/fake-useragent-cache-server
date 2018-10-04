@@ -3,7 +3,7 @@ import os
 from path import Path
 from yarl import URL
 
-PROJECT_ROOT = Path(__file__).abspath()
+PROJECT_ROOT = Path(__file__).abspath().parent
 
 HEARTBEAT_URL = URL('https://fake-useragent.herokuapp.com/')
 HEARTBEAT_TIMEOUT = 20

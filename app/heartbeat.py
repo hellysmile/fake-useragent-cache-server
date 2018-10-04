@@ -9,10 +9,17 @@ logger = logging.getLogger(__name__)
 async def ping(*, url, timeout):
     async with aiohttp.ClientSession() as session:
         try:
-            logger.debug(url)
+            msg = 'Loading %(url)s'
+            context = {'url': url}
+            logger.debug(msg, context)
 
             async with session.get(url, timeout=timeout) as response:
-                logger.debug(response.status)
+                msg = 'Loaded %(url)s > %(status)d'
+                context = {
+                    'url': url,
+                    'status': response.status,
+                }
+                logger.debug(msg, context)
         except (aiohttp.ClientError, asyncio.TimeoutError) as exc:
             logger.exception(exc)
 
