@@ -11,3 +11,5 @@ HEARTBEAT_DELAY = 10
 
 HOST = '0.0.0.0'
 PORT = os.environ.get('PORT', 8000)
+
+BLACKLIST = {'76.106.177.69'}

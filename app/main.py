@@ -3,10 +3,12 @@ import logging
 
 import uvloop
 from aiohttp import web
+from aiohttp_remotes import XForwardedRelaxed, setup
 
 from . import settings
 from .handlers import Handler
 from .heartbeat import heartbeat
+from .middlewares import blacklist_middleware
 from .routes import setup_routes
 
 
@@ -29,14 +31,18 @@ async def heartbeat_ctx(app):
 
 
 def make_app():
+    loop = asyncio.get_event_loop()
+
     handler = Handler()
     handler.load_data(path=settings.PROJECT_ROOT / 'data')
 
-    app = web.Application()
+    app = web.Application(middlewares=[blacklist_middleware])
 
     setup_routes(app, handler)
 
     app.cleanup_ctx.append(heartbeat_ctx)
+
+    loop.run_until_complete(setup(app, XForwardedRelaxed()))
 
     return app
 
