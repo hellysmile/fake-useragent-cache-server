@@ -3,7 +3,7 @@ import logging
 
 import uvloop
 from aiohttp import web
-from aiohttp_remotes import XForwardedRelaxed, setup
+from aiohttp_remotes import XForwardedRelaxed
 
 from . import settings
 from .handlers import Handler
