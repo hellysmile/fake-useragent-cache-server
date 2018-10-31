@@ -4,4 +4,4 @@ async-timeout==3.0.1
 flake8==3.5.0
 isort==4.3.4
 path.py==11.5.0
-uvloop==0.11.2
+uvloop==0.11.3
