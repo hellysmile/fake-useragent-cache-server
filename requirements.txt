@@ -1,6 +1,6 @@
 aiohttp==3.4.4
 aiohttp-remotes==0.1.2
-async-timeout==3.0.1
+async-timeout==4.0.0
 flake8==3.6.0
 isort==4.3.4
 path.py==11.5.0
